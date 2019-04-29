@@ -7,7 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		3097C9BD2215E6A600C9356D /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 3097C9BC2215E6A600C9356D /* main.c */; };
+		3020EBC42218B2DF005F18D9 /* daveplay.c in Sources */ = {isa = PBXBuildFile; fileRef = 3020EBC32218B2DF005F18D9 /* daveplay.c */; };
+		3020EBE12220E28F005F18D9 /* trash.c in Sources */ = {isa = PBXBuildFile; fileRef = 3020EBE02220E28F005F18D9 /* trash.c */; };
+		304616652239A46E009E7CE8 /* object.c in Sources */ = {isa = PBXBuildFile; fileRef = 304616642239A46E009E7CE8 /* object.c */; };
+		3097C9BD2215E6A600C9356D /* dave.c in Sources */ = {isa = PBXBuildFile; fileRef = 3097C9BC2215E6A600C9356D /* dave.c */; };
+		3097C9C72215E6D000C9356D /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3097C9C42215E6D000C9356D /* SDL2.framework */; };
+		3097C9C82215E6D000C9356D /* SDL2_image.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3097C9C52215E6D000C9356D /* SDL2_image.framework */; };
+		3097C9C92215E6D000C9356D /* SDL2_mixer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3097C9C62215E6D000C9356D /* SDL2_mixer.framework */; };
+		3097C9CC2215E77900C9356D /* video.c in Sources */ = {isa = PBXBuildFile; fileRef = 3097C9CA2215E77900C9356D /* video.c */; };
+		3097C9D12217412F00C9356D /* editor.c in Sources */ = {isa = PBXBuildFile; fileRef = 3097C9D02217412F00C9356D /* editor.c */; };
+		3097C9D52217551500C9356D /* def.c in Sources */ = {isa = PBXBuildFile; fileRef = 3097C9D42217551500C9356D /* def.c */; };
+		30A61EB0223D33B9008B53E9 /* random.c in Sources */ = {isa = PBXBuildFile; fileRef = 30A61EAF223D33B9008B53E9 /* random.c */; };
+		30DC972F2243D927008BAAA1 /* light.c in Sources */ = {isa = PBXBuildFile; fileRef = 30DC972E2243D927008BAAA1 /* light.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -23,8 +34,26 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		3020EBC32218B2DF005F18D9 /* daveplay.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = daveplay.c; sourceTree = "<group>"; };
+		3020EBE02220E28F005F18D9 /* trash.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = trash.c; sourceTree = "<group>"; };
+		304616642239A46E009E7CE8 /* object.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = object.c; sourceTree = "<group>"; };
 		3097C9B92215E6A600C9356D /* DungeonDave */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = DungeonDave; sourceTree = BUILT_PRODUCTS_DIR; };
-		3097C9BC2215E6A600C9356D /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
+		3097C9BC2215E6A600C9356D /* dave.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = dave.c; sourceTree = "<group>"; };
+		3097C9C42215E6D000C9356D /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = ../../../../../Library/Frameworks/SDL2.framework; sourceTree = "<group>"; };
+		3097C9C52215E6D000C9356D /* SDL2_image.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_image.framework; path = ../../../../../Library/Frameworks/SDL2_image.framework; sourceTree = "<group>"; };
+		3097C9C62215E6D000C9356D /* SDL2_mixer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_mixer.framework; path = ../../../../../Library/Frameworks/SDL2_mixer.framework; sourceTree = "<group>"; };
+		3097C9CA2215E77900C9356D /* video.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = video.c; sourceTree = "<group>"; };
+		3097C9CB2215E77900C9356D /* video.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = video.h; sourceTree = "<group>"; };
+		3097C9CD2217021700C9356D /* graphics */ = {isa = PBXFileReference; lastKnownFileType = folder; path = graphics; sourceTree = "<group>"; };
+		3097C9CE22171EDE00C9356D /* dave.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = dave.h; sourceTree = "<group>"; };
+		3097C9D02217412F00C9356D /* editor.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = editor.c; sourceTree = "<group>"; };
+		3097C9D3221752C500C9356D /* levels */ = {isa = PBXFileReference; lastKnownFileType = folder; path = levels; sourceTree = "<group>"; };
+		3097C9D42217551500C9356D /* def.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = def.c; sourceTree = "<group>"; };
+		30A61EAE223D33B9008B53E9 /* random.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = random.h; sourceTree = "<group>"; };
+		30A61EAF223D33B9008B53E9 /* random.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = random.c; sourceTree = "<group>"; };
+		30DC972C2242715E008BAAA1 /* notes.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = notes.txt; sourceTree = "<group>"; };
+		30DC972D2243D927008BAAA1 /* light.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = light.h; sourceTree = "<group>"; };
+		30DC972E2243D927008BAAA1 /* light.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = light.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -32,17 +61,31 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3097C9C72215E6D000C9356D /* SDL2.framework in Frameworks */,
+				3097C9C82215E6D000C9356D /* SDL2_image.framework in Frameworks */,
+				3097C9C92215E6D000C9356D /* SDL2_mixer.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		3020EBDF221F02C6005F18D9 /* support */ = {
+			isa = PBXGroup;
+			children = (
+				3097C9CB2215E77900C9356D /* video.h */,
+				3097C9CA2215E77900C9356D /* video.c */,
+				3020EBE02220E28F005F18D9 /* trash.c */,
+			);
+			path = support;
+			sourceTree = "<group>";
+		};
 		3097C9B02215E6A600C9356D = {
 			isa = PBXGroup;
 			children = (
 				3097C9BB2215E6A600C9356D /* DungeonDave */,
 				3097C9BA2215E6A600C9356D /* Products */,
+				3097C9C32215E6D000C9356D /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -57,9 +100,32 @@
 		3097C9BB2215E6A600C9356D /* DungeonDave */ = {
 			isa = PBXGroup;
 			children = (
-				3097C9BC2215E6A600C9356D /* main.c */,
+				3020EBDF221F02C6005F18D9 /* support */,
+				3097C9CD2217021700C9356D /* graphics */,
+				3097C9D3221752C500C9356D /* levels */,
+				3097C9CE22171EDE00C9356D /* dave.h */,
+				3097C9BC2215E6A600C9356D /* dave.c */,
+				3020EBC32218B2DF005F18D9 /* daveplay.c */,
+				3097C9D02217412F00C9356D /* editor.c */,
+				3097C9D42217551500C9356D /* def.c */,
+				304616642239A46E009E7CE8 /* object.c */,
+				30A61EAE223D33B9008B53E9 /* random.h */,
+				30A61EAF223D33B9008B53E9 /* random.c */,
+				30DC972D2243D927008BAAA1 /* light.h */,
+				30DC972E2243D927008BAAA1 /* light.c */,
+				30DC972C2242715E008BAAA1 /* notes.txt */,
 			);
 			path = DungeonDave;
+			sourceTree = "<group>";
+		};
+		3097C9C32215E6D000C9356D /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				3097C9C52215E6D000C9356D /* SDL2_image.framework */,
+				3097C9C62215E6D000C9356D /* SDL2_mixer.framework */,
+				3097C9C42215E6D000C9356D /* SDL2.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -118,7 +184,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3097C9BD2215E6A600C9356D /* main.c in Sources */,
+				30DC972F2243D927008BAAA1 /* light.c in Sources */,
+				3020EBE12220E28F005F18D9 /* trash.c in Sources */,
+				304616652239A46E009E7CE8 /* object.c in Sources */,
+				30A61EB0223D33B9008B53E9 /* random.c in Sources */,
+				3097C9BD2215E6A600C9356D /* dave.c in Sources */,
+				3097C9CC2215E77900C9356D /* video.c in Sources */,
+				3097C9D12217412F00C9356D /* editor.c in Sources */,
+				3020EBC42218B2DF005F18D9 /* daveplay.c in Sources */,
+				3097C9D52217551500C9356D /* def.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -241,6 +315,10 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = D54ZHB8K4R;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -250,6 +328,10 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = D54ZHB8K4R;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
