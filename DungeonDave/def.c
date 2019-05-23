@@ -10,94 +10,94 @@
 #include "dave.h"
 
 // defs[] stores the object definitions for all classes
-objdef_t objdefs[NUMOBJECTS];
-tiledef_t tiledefs[NUMTILES];
+//objinfo_t objinfo[NUMOBJECTS];
+//tileinfo_t tileinfo[NUMTILES];
 
-
+#if 0
 void InitObjDefs ()
 {
-	objdefs[nothing] = (objdef_t) {
+	objinfo[OT_NOTHING] = (objinfo_t) {
 		NULL,NULL,false,0,0,0,0,0,NULL
 	};
 	
-	objdefs[playerclass] = (objdef_t) {
+	objinfo[OT_PLAYER] = (objinfo_t) {
 		PlayerThink,PlayerContact,
 		false,
 		8,16,	// size
 		4,		// speed
 		100,	// maxhp
 		0,		// damage
-		&objtextures[playerclass]
+		&objtextures[OT_PLAYER]
 	};
 	
-	objdefs[fireballclass] = (objdef_t) {
+	objinfo[OT_FIREBALL] = (objinfo_t) {
 		FireBallThink,FireBallContact,
 		false, 		// solid
 		8,8,		// size
 		5,			// speed
 		0,			// maxhp
 		10,			// damage
-		&objtextures[fireballclass]
+		&objtextures[OT_FIREBALL]
 	};
 	
-	objdefs[fbexplodeclass] = (objdef_t) {
+	objinfo[OT_FBEXPLOSION] = (objinfo_t) {
 		FireBallExplosionThink,NULL,
 		false,
 		16,16,
 		0,
 		0,
 		0,
-		&objtextures[fbexplodeclass]
+		&objtextures[OT_FBEXPLOSION]
 	};
 	
-	objdefs[batclass] = (objdef_t) {
+	objinfo[OT_BAT] = (objinfo_t) {
 		BatThink,BatContact,
 		true,
 		16,8, 	// size
 		4,		// speed
 		25,		// maxhp
 		5,		// damage
-		&objtextures[batclass]
+		&objtextures[OT_BAT]
 	};
 
-	objdefs[snakeclass] = (objdef_t) {
+	objinfo[OT_SNAKE] = (objinfo_t) {
 		SnakeThink,SnakeContact,
 		true,
 		16,8, 	// size
 		2,		// speed
 		45,		// maxhp
 		15,		// damage
-		&objtextures[snakeclass]
+		&objtextures[OT_SNAKE]
 	};
 	
-	objdefs[smhealthclass] = (objdef_t) {
+	objinfo[OT_SMALLHEALTH] = (objinfo_t) {
 		SnakeThink,NULL,
 		false,
 		7,7, 	// size
 		0,		// speed
 		10,		// maxhp
 		0,		// damage
-		&objtextures[smhealthclass]
+		&objtextures[OT_SMALLHEALTH]
 	};
 	
-	objdefs[bighealthclass] = (objdef_t) {
+	objinfo[OT_BIGHEALTH] = (objinfo_t) {
 		SnakeThink,NULL,
 		false,
 		12,12, 	// size
 		0,		// speed
 		25,		// maxhp
 		0,		// damage
-		&objtextures[bighealthclass]
+		&objtextures[OT_BIGHEALTH]
 	};
 
-	objdefs[torchclass] = (objdef_t) {
+	objinfo[OT_TORCH] = (objinfo_t) {
 		TorchThink,NULL,
 		false,
 		16,16, 	// size
 		0,		// speed
 		0,		// maxhp
 		0,		// damage
-		&objtextures[torchclass]
+		&objtextures[OT_TORCH]
 	};
 
 }
@@ -105,13 +105,14 @@ void InitObjDefs ()
 
 void InitTileDefs ()
 {
-	tiledefs[notile] = (tiledef_t) {
+	tileinfo[TT_EMPTY] = (tileinfo_t) {
 		false,0
 	};
-	tiledefs[floorclass] = (tiledef_t) {
+	tileinfo[TT_FLOOR] = (tileinfo_t) {
 		false,0
 	};
-	tiledefs[wallclass] = (tiledef_t) {
+	tileinfo[TT_WALL] = (tileinfo_t) {
 		true,0
 	};
 }
+#endif

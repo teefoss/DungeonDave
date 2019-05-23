@@ -19,6 +19,8 @@
 		3097C9D52217551500C9356D /* def.c in Sources */ = {isa = PBXBuildFile; fileRef = 3097C9D42217551500C9356D /* def.c */; };
 		30A61EB0223D33B9008B53E9 /* random.c in Sources */ = {isa = PBXBuildFile; fileRef = 30A61EAF223D33B9008B53E9 /* random.c */; };
 		30DC972F2243D927008BAAA1 /* light.c in Sources */ = {isa = PBXBuildFile; fileRef = 30DC972E2243D927008BAAA1 /* light.c */; };
+		30FD3D3F227A49DC008D7DE6 /* info.c in Sources */ = {isa = PBXBuildFile; fileRef = 30FD3D3E227A49DC008D7DE6 /* info.c */; };
+		30FD3D58227D2AA5008D7DE6 /* player.c in Sources */ = {isa = PBXBuildFile; fileRef = 30FD3D57227D2AA5008D7DE6 /* player.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -54,6 +56,14 @@
 		30DC972C2242715E008BAAA1 /* notes.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = notes.txt; sourceTree = "<group>"; };
 		30DC972D2243D927008BAAA1 /* light.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = light.h; sourceTree = "<group>"; };
 		30DC972E2243D927008BAAA1 /* light.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = light.c; sourceTree = "<group>"; };
+		30FD3D3B227A2DAB008D7DE6 /* object.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = object.h; sourceTree = "<group>"; };
+		30FD3D3C227A3040008D7DE6 /* type.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = type.h; sourceTree = "<group>"; };
+		30FD3D3D227A49DC008D7DE6 /* info.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = info.h; sourceTree = "<group>"; };
+		30FD3D3E227A49DC008D7DE6 /* info.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = info.c; sourceTree = "<group>"; };
+		30FD3D56227D2AA5008D7DE6 /* player.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = player.h; sourceTree = "<group>"; };
+		30FD3D57227D2AA5008D7DE6 /* player.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = player.c; sourceTree = "<group>"; };
+		30FD3DAF2289A5EB008D7DE6 /* statenotes */ = {isa = PBXFileReference; lastKnownFileType = text; path = statenotes; sourceTree = "<group>"; };
+		30FD3DB0228B6708008D7DE6 /* doomnotes.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = doomnotes.txt; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,6 +110,7 @@
 		3097C9BB2215E6A600C9356D /* DungeonDave */ = {
 			isa = PBXGroup;
 			children = (
+				30FD3DAE2289A5CC008D7DE6 /* Notes */,
 				3020EBDF221F02C6005F18D9 /* support */,
 				3097C9CD2217021700C9356D /* graphics */,
 				3097C9D3221752C500C9356D /* levels */,
@@ -108,12 +119,17 @@
 				3020EBC32218B2DF005F18D9 /* daveplay.c */,
 				3097C9D02217412F00C9356D /* editor.c */,
 				3097C9D42217551500C9356D /* def.c */,
+				30FD3D3B227A2DAB008D7DE6 /* object.h */,
 				304616642239A46E009E7CE8 /* object.c */,
 				30A61EAE223D33B9008B53E9 /* random.h */,
 				30A61EAF223D33B9008B53E9 /* random.c */,
 				30DC972D2243D927008BAAA1 /* light.h */,
 				30DC972E2243D927008BAAA1 /* light.c */,
-				30DC972C2242715E008BAAA1 /* notes.txt */,
+				30FD3D3C227A3040008D7DE6 /* type.h */,
+				30FD3D3D227A49DC008D7DE6 /* info.h */,
+				30FD3D3E227A49DC008D7DE6 /* info.c */,
+				30FD3D56227D2AA5008D7DE6 /* player.h */,
+				30FD3D57227D2AA5008D7DE6 /* player.c */,
 			);
 			path = DungeonDave;
 			sourceTree = "<group>";
@@ -126,6 +142,16 @@
 				3097C9C42215E6D000C9356D /* SDL2.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		30FD3DAE2289A5CC008D7DE6 /* Notes */ = {
+			isa = PBXGroup;
+			children = (
+				30FD3DAF2289A5EB008D7DE6 /* statenotes */,
+				30DC972C2242715E008BAAA1 /* notes.txt */,
+				30FD3DB0228B6708008D7DE6 /* doomnotes.txt */,
+			);
+			path = Notes;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -168,6 +194,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				Base,
 			);
 			mainGroup = 3097C9B02215E6A600C9356D;
 			productRefGroup = 3097C9BA2215E6A600C9356D /* Products */;
@@ -189,8 +216,10 @@
 				304616652239A46E009E7CE8 /* object.c in Sources */,
 				30A61EB0223D33B9008B53E9 /* random.c in Sources */,
 				3097C9BD2215E6A600C9356D /* dave.c in Sources */,
+				30FD3D3F227A49DC008D7DE6 /* info.c in Sources */,
 				3097C9CC2215E77900C9356D /* video.c in Sources */,
 				3097C9D12217412F00C9356D /* editor.c in Sources */,
+				30FD3D58227D2AA5008D7DE6 /* player.c in Sources */,
 				3020EBC42218B2DF005F18D9 /* daveplay.c in Sources */,
 				3097C9D52217551500C9356D /* def.c in Sources */,
 			);

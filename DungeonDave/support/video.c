@@ -10,6 +10,8 @@
 #include <SDL2_image/SDL_image.h>
 #include "video.h"
 
+#define FRAME_TIME 16
+
 typedef struct
 {
 	int	chr;	// number in the character array
@@ -122,10 +124,11 @@ graphic_t LoadGraphic (int w, int h, char *data)
 // 	LoadTextureFromFile
 /// Returns a texture_t with texture initialized and size loaded
 //
-texture_t V_LoadTexture (const char *file)
+SDL_Texture *V_LoadTexture (const char *file)
 {
 	SDL_Surface *s;
-	texture_t t;
+//	texture_t t;
+	SDL_Texture *t;
 	
 	s = IMG_Load(file);
 	if (!s) {
@@ -134,9 +137,10 @@ texture_t V_LoadTexture (const char *file)
 		exit(1);
 	}
 	
-	t.sdltx = SDL_CreateTextureFromSurface(renderer, s);
-	t.w = s->w;
-	t.h = s->h;
+//	t.sdltx = SDL_CreateTextureFromSurface(renderer, s);
+	t = SDL_CreateTextureFromSurface(renderer, s);
+//	t.w = s->w;
+//	t.h = s->h;
 	
 	SDL_FreeSurface(s);
 	return t;
@@ -213,7 +217,12 @@ V_InitVideo
 	// WINDOW
 	
 	flags = SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI;
-	window = SDL_CreateWindow( winname,0,0,screenw*scale,screenh*scale,flags );
+	window = SDL_CreateWindow (winname,
+							   SDL_WINDOWPOS_CENTERED,
+							   SDL_WINDOWPOS_CENTERED,
+							   screenw*scale,
+							   screenh*scale,
+							   flags);
 	if ( !window )
 	{
 		puts("SDL_CreateWindow failed");
@@ -222,9 +231,9 @@ V_InitVideo
 
 	// https://discourse.libsdl.org/t/macos-10-14-mojave-issues/25060
 	// needed for OpenGL bug in OS X Mojave
-	SDL_GL_CreateContext(window);
-	SDL_PumpEvents();
-	SDL_SetWindowSize(window, screenw*scale, screenh*scale);
+//	SDL_GL_CreateContext(window);
+//	SDL_PumpEvents();
+//	SDL_SetWindowSize(window, screenw*scale, screenh*scale);
 
 	
 	// RENDERER
@@ -267,29 +276,29 @@ void V_ShutDown (void)
 
 
 static int starttic;
-static int prevtic;
-//static int endtics;
 float dt;
 
 // call at the start of any loop that needs fr limit
 void V_StartFrame (void)
 {
 	starttic = SDL_GetTicks();
-	prevtic = starttic;
 }
 
 // call at the end of any loop that needs fr limit
-void V_LimitFR (unsigned fps)
+void V_LimitFR (void)
 {
-	float limit;
+//	int dt;
 	
-	limit = 1000.0f / (float)fps;
 	dt = SDL_GetTicks() - starttic;
-//	printf("dt = %f ms\n",dt);
+//	printf(":: Frame Total: %d ms\n", (int)dt);
 	
-	if (dt < limit)
-		SDL_Delay(limit-dt);
-	dt /= 1000.0f;
+	if (dt < FRAME_TIME)
+	{
+		SDL_Delay(FRAME_TIME-dt);
+	}
+	else printf("Low frame rate!\n");
+	
+//	dt /= 1000.0f; // convert to seconds
 }
 
 

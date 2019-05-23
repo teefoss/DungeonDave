@@ -11,10 +11,9 @@
 #include "dave.h"
 #include "random.h"
 #include "light.h"
+#include "player.h"
 
-#define DAVE_DELAY		4
-#define DAVE_COOLDOWN	17
-
+#define FLINCH_SPEED 2
 
 #pragma mark - Spawners
 
@@ -22,25 +21,25 @@ void SpawnFireball (dir_t dir)
 {
 	int w, h;
 	int offs;
-	object_t fb;
+	object_t *fb = NULL;
 	
-	w = objdefs[fireballclass].w;
-	h = objdefs[fireballclass].h;
-	offs = objdefs[fireballclass].speed; // fireball starts right next to player
+	w = objinfo[OT_FIREBALL].width;
+	h = objinfo[OT_FIREBALL].height;
+	offs = objinfo[OT_FIREBALL].speed; // fireball starts right next to player
 
 	switch (dir)
 	{
-		case north:
-			fb = NewObject(fireballclass, player->left, player->top-h+offs);
+		case DI_NORTH:
+			fb = SpawnObject(OT_FIREBALL, player.obj->left, player.obj->top-h+offs);
 			break;
-		case east:
-			fb = NewObject(fireballclass, player->right-offs, player->top);
+		case DI_EAST:
+			fb = SpawnObject(OT_FIREBALL, player.obj->right-offs, player.obj->top);
 			break;
-		case south:
-			fb = NewObject(fireballclass, player->left, player->bottom-offs);
+		case DI_SOUTH:
+			fb = SpawnObject(OT_FIREBALL, player.obj->left, player.obj->bottom-offs);
 			break;
-		case west:
-			fb = NewObject(fireballclass, player->left-w+offs, player->top);
+		case DI_WEST:
+			fb = SpawnObject(OT_FIREBALL, player.obj->left-w+offs, player.obj->top);
 			break;
 
 		default:
@@ -48,210 +47,164 @@ void SpawnFireball (dir_t dir)
 			break;
 	}
 
-	fb.dir = dir;
-	AddObject(&fb);
-	player->tics1 = DAVE_SHOT_COOLDOWN;
+	fb->dir = dir;
+	//AddObject(&fb);
+	player.cooldown = DAVE_SHOT_COOLDOWN;
+}
+
+
+void PickupHealth (object_t * health)
+{
+	if (player.obj->health < 100) {
+		player.obj->health += health->info->maxhp;
+		if (player.obj->health > 100)
+			player.obj->health = 100;
+		SetObjState(health, S_NULL);
+	}
 }
 
 
 
 //==============================================================================
-#pragma mark - Thinkers
-//==============================================================================
-//
-// Thinkers are only called when objects are active
-//
+
+#pragma mark - THINKERS
 
 #define BAT_SPEED 	2
 #define BAT_DELAY	4
 
-void BatThink (object_t *obj)
+void Chase (object_t * obj)
 {
-	if (obj->delay) {
-		obj->delay--;
-		return;
+	float spd = obj->info->speed;
+	
+	if (Random() > 200) {
+		obj->dx = (Random() % 2 == 0) ? spd : -spd;
+		obj->dy = (Random() % 2 == 0) ? spd : -spd;
+	} else {
+		obj->dx = spd * (sign(player.obj->x - obj->x));
+		obj->dy = spd * (sign(player.obj->y - obj->y));
 	}
-	obj->delay = BAT_DELAY;
-	
-	if (obj->cooldown)
-		obj->cooldown--;
-
-	obj->oldx = obj->x;
-	obj->oldy = obj->y;
-	obj->stage ^= 1;
-
-	obj->xmove = BAT_SPEED * (sign(player->x - obj->x));
-	obj->ymove = BAT_SPEED * (sign(player->y - obj->y));
-	
-	// if tics timer, apply random motion
-	if (obj->tics) {
-		obj->xmove *= obj->randx;
-		obj->ymove *= obj->randy;
-		obj->tics--;
-	}
-	
-	if (obj->xmove)
-	{
-		SetObjectX(obj, obj->x + obj->xmove);
-		ClipToSolidTileHoriz(obj);
-	}
-	
-	if (obj->ymove)
-	{
-		SetObjectY(obj, obj->y + obj->ymove);
-		ClipToSolidTileVert(obj);
-	}
-	
-	if (obj->hp < 0)
-		obj->active = removable;
 }
 
+void Flee (object_t * obj)
+{
+	obj->dx = obj->info->speed * -(sign(player.obj->x - obj->x));
+	obj->dy = obj->info->speed * -(sign(player.obj->y - obj->y));
+}
+
+
+void BatThink (object_t * obj)
+{
+	if (obj->health <= 0)
+		SetObjState(obj, S_NULL);
+	
+	if (!OnScreen(obj))
+		SetObjState(obj, S_BAT_STAND);
+}
 
 void SnakeThink (object_t *obj)
 {
-	if (obj->delay) {
-		obj->delay--;
-		return;
-	}
-	obj->delay = BAT_DELAY;
+#if 0
+//	if (obj->delay) {
+//		obj->delay--;
+//		return;
+//	}
+//	obj->delay = BAT_DELAY;
 	
-	if (obj->cooldown)
-		obj->cooldown--;
+	// todo
+//	if (obj->cooldown)
+//		obj->cooldown--;
 	
 	obj->oldx = obj->x;
 	obj->oldy = obj->y;
-	obj->stage ^= 1;
+//	obj->stage ^= 1;
 	
-	obj->xmove = obj->def->speed * (sign(player->x - obj->x));
-	obj->ymove = obj->def->speed * (sign(player->y - obj->y));
+	obj->dx = obj->info->speed * (sign(player.obj->x - obj->x));
+	obj->dy = obj->info->speed * (sign(player.obj->y - obj->y));
 
 	// set direction
-	if (obj->xmove < 0)
-		obj->dir = west;
-	if (obj->xmove > 0)
-		obj->dir = east;
+	if (obj->dx < 0)
+		obj->dir = DI_WEST;
+	if (obj->dx > 0)
+		obj->dir = DI_EAST;
 	
 	// if tics timer, apply random motion
 	if (obj->tics) {
-		obj->xmove *= obj->randx;
-		obj->ymove *= obj->randy;
+		obj->dx *= obj->randx;
+		obj->dy *= obj->randy;
 		obj->tics--;
 	}
 	
-	if (obj->xmove)
+	if (obj->dx)
 	{
-		SetObjectX(obj, obj->x + obj->xmove);
+		SetObjectX(obj, obj->x + obj->dx);
 		ClipToSolidTileHoriz(obj);
 	}
 	
-	if (obj->ymove)
+	if (obj->dy)
 	{
-		SetObjectY(obj, obj->y + obj->ymove);
+		SetObjectY(obj, obj->y + obj->dy);
 		ClipToSolidTileVert(obj);
 	}
 	
-	if (obj->hp < 0)
+	if (obj->health < 0)
 		obj->active = removable;
+#endif
 }
 
 
 
 
-void PlayerThink (object_t *obj)
-{	
-	if (obj->delay) {
-		obj->delay--;
-		return;
-	}
-	obj->delay = DAVE_DELAY;
-	
-	if (obj->tics) {
-		obj->tics--; // cooldown timer
-	}
-	if (obj->tics1) {
-		obj->tics1--; // shot timer
-	}
-	
-	// update player's direction
-	if (obj->xmove < 0)		obj->dir = west;
-	if (obj->xmove > 0)		obj->dir = east;
-	if (obj->ymove < 0 && !obj->xmove)	obj->dir = north;
-	if (obj->ymove > 0 && !obj->xmove)	obj->dir = south;
-	
-	// update animation frame, only if moving
-	if ( (obj->xmove || obj->ymove) ) {
-		obj->stage++;
-		if (obj->stage > 2)
-			obj->stage = 1;
-	} else {
-		obj->stage = 0; // standing animation
-	}
 
-	obj->oldx = obj->x; // save in case it needs to be moved back
-	obj->oldy = obj->y;
-	
-	if (obj->xmove)
-	{
-		SetObjectX(obj, obj->x + obj->xmove);
-		ClipToSolidTileHoriz(obj);
-		UpdateOriginX();
-	}
-	
-	if (obj->ymove)
-	{
-		SetObjectY(obj, obj->y + obj->ymove);
-		ClipToSolidTileVert(obj);
-		UpdateOriginY();
-	}
-	
-	obj->xmove = 0;
-	obj->ymove = 0;
-}
 
 
 #define FIREBALL_LIGHT 2
 
+
 void FireBallThink (object_t *obj)
 {
+#if 0
 	FloodLightAt(obj->tilex, obj->tiley, FIREBALL_LIGHT);
 	
-	if (obj->delay) {
-		obj->delay--;
-		return;
-	}
-	obj->delay = DAVE_DELAY - 2;
+//	if (obj->delay) {
+//		obj->delay--;
+//		return;
+//	}
+//	obj->delay = DAVE_DELAY - 2;
 	
-	if (!obj->xmove && !obj->ymove) // new fireball, set x/y move
+	if (!obj->dx && !obj->dy) // new fireball, set x/y move
 	{
 		switch (obj->dir) // fb's are set up with a dir
 		{
-			case north: 	obj->ymove = -obj->def->speed; break;
-			case south:		obj->ymove =  obj->def->speed; break;
-			case east:		obj->xmove =  obj->def->speed; break;
-			case west:		obj->xmove = -obj->def->speed; break;
+			case DI_NORTH: 	obj->dy = -obj->info->speed; break;
+			case DI_SOUTH:		obj->dy =  obj->info->speed; break;
+			case DI_EAST:		obj->dx =  obj->info->speed; break;
+			case DI_WEST:		obj->dx = -obj->info->speed; break;
 			default:
 				Quit("FireBallThink: Bad object direction!");
 		}
 	}
 	
-	obj->stage ^= 1; // update animation frame
+	// todo
+//	obj->stage ^= 1; // update animation frame
 	obj->oldx = obj->x; // save in case it needs to be moved back
 	obj->oldy = obj->y;
 
-	if (obj->xmove) {
-		SetObjectX(obj, obj->x + obj->xmove);
+	if (obj->dx) {
+		SetObjectX(obj, obj->x + obj->dx);
 		if (ClipToSolidTileHoriz(obj)) {
 			obj->active = removable;
-			object_t explosion = NewObject(fbexplodeclass, obj->x-4, obj->y-4);
-			AddObject(&explosion);
+			//object_t *explosion =
+			SpawnObject(OT_FBEXPLOSION, obj->x-4, obj->y-4);
+			//AddObject(&explosion);
 		}
 	}
-	if (obj->ymove) {
-		SetObjectY(obj, obj->y + obj->ymove);
+	if (obj->dy) {
+		SetObjectY(obj, obj->y + obj->dy);
 		if (ClipToSolidTileVert(obj)) {
 			obj->active = removable;
-			object_t explosion = NewObject(fbexplodeclass, obj->x-4, obj->y-4);
-			AddObject(&explosion);
+			//object_t *explosion =
+			SpawnObject(OT_FBEXPLOSION, obj->x-4, obj->y-4);
+			//AddObject(&explosion);
 		}
 	}
 	
@@ -260,40 +213,24 @@ void FireBallThink (object_t *obj)
 	
 //	obj->xmove = 0;
 //	obj->ymove = 0;
+#endif
 }
 
-#define FB_EXPLODE_DELAY 	DAVE_DELAY
+#define FB_EXPLODE_DELAY 	4
 
 void FireBallExplosionThink (object_t *expl)
 {
 	FloodLightAt(expl->tilex, expl->tiley, FIREBALL_LIGHT);
-	
-	if (expl->delay) {
-		expl->delay--;
-		return;
-	}
-	expl->delay = FB_EXPLODE_DELAY;
-
-	expl->stage++;
-	if (expl->stage > 4)
-		expl->active = removable;
 }
 
 
 void TorchThink (object_t *obj)
 {
 	FloodLightAt(obj->tilex, obj->tiley, 3);
-
-	if (obj->delay) {
-		obj->delay--;
-		return;
-	}
-	obj->delay = DAVE_DELAY + 2;
 	
-	obj->stage++;
-	obj->stage = obj->stage % 3;
+//	obj->state->frame++;
+//	obj->state->frame &= obj->state->numframes;
 }
-
 
 
 //==============================================================================
@@ -302,24 +239,19 @@ void TorchThink (object_t *obj)
 
 void BatContact (object_t *bat, object_t *hit)
 {
-//	if (hit->def->solid) {
-//		SetObjectX(bat, bat->oldx);
-//		SetObjectY(bat, bat->oldy);
+//	if (hit->flags & OF_SOLID) {
+//		TryMove(bat, bat->oldx, bat->oldy);
+//		TryMove(hit, hit->oldx, hit->oldy);
 //	}
 
-	switch (hit->objclass)
+	switch (hit->type)
 	{
-		case playerclass: // always move away from the player
-			if (!bat->tics)
-				bat->tics = 10;
-			bat->randx = -1;
-			bat->randy = -1;
+		case OT_PLAYER: // always move away from the player
+			SetObjState(bat, S_BAT_FLEE);
 			break;
 			
-		case snakeclass:
-		case batclass: // random bounce
-			if (!bat->tics)
-				bat->tics = 5;
+		case OT_SNAKE:
+		case OT_BAT: // random motion
 			bat->randx = Random() % 3 - 1;
 			bat->randy = Random() % 3 - 1;
 			break;
@@ -331,17 +263,17 @@ void BatContact (object_t *bat, object_t *hit)
 
 void SnakeContact (object_t *snake, object_t *hit)
 {
-	switch (hit->objclass)
+	switch (hit->type)
 	{
-		case playerclass: // snake stops for a bit
+		case OT_PLAYER: // snake stops for a bit
 			if (!snake->tics)
 				snake->tics = 10;
 			snake->randx = 0;
 			snake->randy = 0;
 			break;
 			
-		case batclass:
-		case snakeclass:
+		case OT_BAT:
+		case OT_SNAKE:
 			if (!snake->tics)
 				snake->tics = 10;
 			snake->randx = Random() % 3 - 1;
@@ -353,27 +285,22 @@ void SnakeContact (object_t *snake, object_t *hit)
 }
 
 
-void PlayerContact (object_t *pl, object_t *hit)
+void PlayerContact (object_t *player, object_t *hit)
 {
-	switch (hit->objclass)
+	if (player->type != OT_PLAYER)
+		Quit("Error! Sent a non-player object to PlayerContact");
+
+	switch (hit->type)
 	{
 		// ENEMY COLLISIONS
-		case batclass:
-		case snakeclass:
-			if (!pl->tics) {
-				pl->hp -= hit->def->damage;
-				pl->tics = DAVE_COOLDOWN;
-			}
+		case OT_BAT:
+		case OT_SNAKE:
+			DamagePlayer(hit->info->damage);
 			break;
 			
-		case smhealthclass:
-		case bighealthclass:
-			if (pl->hp < 100) {
-				pl->hp += hit->def->maxhp;
-				if (pl->hp > 100)
-					pl->hp = 100;
-				hit->active = removable;
-			}
+		case OT_SMALLHEALTH:
+		case OT_BIGHEALTH:
+			PickupHealth(hit);
 			break;
 			
 		default:
@@ -383,36 +310,20 @@ void PlayerContact (object_t *pl, object_t *hit)
 
 void FireBallContact (object_t *fb, object_t *hit)
 {
-	switch (hit->objclass) {
-		case batclass:
-		case snakeclass:
-			hit->cooldown = 10;
-			hit->hp -= fb->def->damage;
+	switch (hit->type) {
+		case OT_BAT:
+		case OT_SNAKE:
+			//hit->cooldown = 10;
+			hit->health -= fb->info->damage;
 			break;
 		default:
 			break;
 	}
 	
-	if (hit->def->solid) {
+	if (hit->flags & OF_SOLID) {
 		fb->active = removable;
-		object_t explosion = NewObject(fbexplodeclass, fb->x-4, fb->y-4);
-		AddObject(&explosion);
+		//object_t explosion =
+		SpawnObject(OT_FBEXPLOSION, fb->x-4, fb->y-4);
+		//AddObject(&explosion);
 	}
-}
-
-
-
-//==============================================================================
-#pragma mark - React
-//==============================================================================
-
-void PlayerReact_HitMonster (object_t *mon)
-{
-//	if (!player->tics)
-//		player->tics = 100; // start timer
-//	if (--player->tics == 1) {
-//		player->needstoreact = false;
-//		player->def->react = NULL;
-//		player->tics = 0;
-//	}
 }

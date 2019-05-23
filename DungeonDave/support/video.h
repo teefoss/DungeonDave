@@ -61,11 +61,11 @@ extern SDL_Renderer 	*renderer;
 extern float dt;
 
 void V_StartFrame (void);
-void V_LimitFR (unsigned fps);
+void V_LimitFR (void);
 
 void V_InitVideo (int screenw, int screenh, int scale, const char *winname);
 void V_ShutDown (void);
-texture_t V_LoadTexture (const char *file);
+SDL_Texture *V_LoadTexture (const char *file);
 
 void V_Clear (int color);
 void V_RenderTexture (texture_t *tx, int x, int y);

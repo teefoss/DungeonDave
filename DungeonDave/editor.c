@@ -9,16 +9,14 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include "dave.h"
-
-// objects held here, get drawn over the backgr
-// when saved, objects are parsed and added to an array
+#include "light.h"
 
 // Structure to hold editor cursor info
 typedef struct
 {
 	int 		x, y;	// current tile location
-	objclass_t	obj;			// currently selected item for tilemode
-	tileclass_t	tile;			// currently selected item for objmode
+	objtype_t	obj;			// currently selected item for tilemode
+	tiletype_t	tile;			// currently selected item for objmode
 	int			fixedx,fixedy;		// fill box
 } cursor_t;
 
@@ -30,10 +28,12 @@ boolean dragging;	// currently dragging a fill box
 boolean delconfim; 	// press x twice for fill delete
 
 // objects don't move in the editor, so just put them all here
-// for easier display / editing
-objclass_t 	objview[MAPMAX][MAPMAX];
+// for easier display / editing.
+// when saved, objview is parsed and objs are added to an array
 
-char 		filepath[80] = "levels/map01.dave";
+objtype_t 	objview[MAPMAX][MAPMAX];
+
+char filepath[80] = "levels/map01.dave";
 
 
 
@@ -104,7 +104,7 @@ void SaveLevel (const char *filename)
 {
 	FILE *stream;
 	int tilex,tiley;
-	object_t *obj;
+	objdata_t *obj;
 	
 	stream = fopen(filename, "wb");
 	if (!stream) {
@@ -114,7 +114,7 @@ void SaveLevel (const char *filename)
 	
 	current.objectcount = 0; // reset so we can recount
 	memset(&current.objects, 0, sizeof(current.objects));
-	
+
 	// parse 'view' array and add to ->objects
 	for (tiley=0 ; tiley<current.height ; tiley++) {
 		for (tilex=0 ; tilex<current.width ; tilex++)
@@ -122,7 +122,7 @@ void SaveLevel (const char *filename)
 			if (!objview[tiley][tilex])
 				continue;
 			obj = &current.objects[current.objectcount];
-			obj->objclass = objview[tiley][tilex];
+			obj->type = objview[tiley][tilex];
 			obj->tilex = tilex;
 			obj->tiley = tiley;
 			current.objectcount++;
@@ -141,16 +141,19 @@ void SaveLevel (const char *filename)
 // LoadLevel
 // Read level data from file, load editor view arrays,
 // Initialize objects, returns true if load successful
+// Load object linked list for gameplay
 //
 boolean
 LoadLevel
-( leveldata_t 	*level,
-  const char 	*filename )
+( leveldata_t *	level,
+  const char *	filename )
 {
-	FILE 		*stream;
-	int 		i,x,y;
-	object_t 	*obj;
-	tile_t		*tile;
+	FILE *		stream;
+	int 		i;
+	int			x, y;
+	int			spawnx, spawny;
+	objdata_t *	obj;
+	tiletype_t	ttype;
 	
 	stream = fopen(filename, "rb");
 	if (!stream) {
@@ -160,46 +163,38 @@ LoadLevel
 
 	fread(level, sizeof(leveldata_t), 1, stream);
 
+	// reload in case it's already loaded
 	memset(&objview, 0, sizeof(objview));
+	FreeAllObjects();
 
-	// some setup now that everything is loaded
 	for (i=0 ; i<level->objectcount ; i++)
 	{
 		obj = &level->objects[i];
 		
-		if (obj->objclass == playerclass)
-			player = obj;
-
 		// load editor view
-		objview[obj->tiley][obj->tilex] = obj->objclass;
-		obj->def = &objdefs[obj->objclass];
-//		SetObjectPosition(obj, (obj->tilex*TILESIZE + TILESIZE-obj->def->w / 2),
-//						   (obj->tiley*TILESIZE + TILESIZE-obj->def->h / 2));
-		SetObjectPosition(obj, obj->tilex*TILESIZE, obj->tiley*TILESIZE);
-		obj->hp = obj->def->maxhp;
-		obj->active = true; // TODO: set everything to active for now
-		
-//		obj->x = obj->tilex*TILESIZE + TILESIZE-obj->def->w / 2;
-//		obj->y = obj->tiley*TILESIZE + TILESIZE-obj->def->h / 2;
+		objview[obj->tiley][obj->tilex] = obj->type;
+		// spawn game objects
+		spawnx = obj->tilex * TILESIZE + objinfo[obj->type].width / 2;
+		spawny = obj->tiley * TILESIZE + objinfo[obj->type].height / 2;
+		SpawnObject(obj->type, spawnx, spawny);
 	}
 	
-	// set up tile properties
+	// set up initial tile properties
 	for (y=0 ; y<current.height ; y++) {
 		for (x=0 ; x<current.width ; x++)
 		{
-			tile = &current.tilemap[y][x];
-			tile->def = &tiledefs[tile->tileclass];
+			ttype = current.tilemap[y][x].type;
+			tilemap[y][x].type = ttype;
+			tilemap[y][x].flags = tileflags[ttype];
+			tilemap[y][x].tilex = x;
+			tilemap[y][x].tiley = y;
 		}
 	}
 	
-	freeobj = &current.objects[level->objectcount];
-	lastobj = level->objectcount - 1;
-	
+	InitLighting();
 	levelloaded = true;
+	UpdateOrigin();
 	
-	UpdateOriginX();
-	UpdateOriginY();
-
 	printf("Load level success - %s\n",filename);
 	printf("Level number: %i\n",level->levelnum);
 	printf("Numobjects: %i\n",level->objectcount);
@@ -285,13 +280,13 @@ void DoFillBox (filltype type)
 		{
 			switch (type) {
 				case tilefill:
-					current.tilemap[y][x].tileclass = csr.tile;
+					current.tilemap[y][x].type = csr.tile;
 					break;
 				case objfill:
 					objview[y][x] = csr.obj;
 					break;
 				case clrtilefill:
-					current.tilemap[y][x].tileclass = 0;
+					current.tilemap[y][x].type = 0;
 					break;
 				case clrobjfill:
 					objview[y][x] = 0;
@@ -314,26 +309,26 @@ void DoFillBox (filltype type)
 //
 void PlaceTile (boolean add)
 {
-	tile_t *tile = &current.tilemap[csr.y][csr.x];
+	tiledata_t *tile = &current.tilemap[csr.y][csr.x];
 	
 	if (dragging) {
 		if (add) DoFillBox(tilefill);
 		else	 DoFillBox(clrtilefill);
 	} else {
-		if (add) tile->tileclass = (tile->tileclass == csr.tile) ? notile : csr.tile;
-		else	 tile->tileclass = 0;
+		if (add) tile->type = (tile->type == csr.tile) ? TT_EMPTY : csr.tile;
+		else	 tile->type = 0;
 	}
 }
 
 void PlaceObject (boolean add)
 {
-	objclass_t *cell = &objview[csr.y][csr.x];
+	objtype_t *cell = &objview[csr.y][csr.x];
 	
 	if (dragging) {
 		if (add) DoFillBox(objfill);
 		else	 DoFillBox(clrobjfill);
 	} else {
-		if (add) *cell = (*cell == csr.obj) ? nothing : csr.obj;
+		if (add) *cell = (*cell == csr.obj) ? OT_NOTHING : csr.obj;
 		else 	 *cell = 0;
 	}
 }
@@ -352,13 +347,17 @@ void DrawGrid ()
 			SDL_RenderDrawPoint(renderer, x-originx, y-originy);
 }
 
+//
+//	DrawMap
+//	Draw tiles and game objects
+//
 void DrawMap ()
 {
-	int 		x,y;
-	int			offx, offy;
-	tile_t 		*tile;
-	objdef_t 	*def;
-	SDL_Rect	src, dest;
+	int 			x, y;
+	int				offx, offy;
+	tiledata_t *	tile;
+	objinfo_t  *	info;
+	SDL_Rect		src, dest;
 	
 	for (y=0 ; y<current.height ; y++) {
 		for (x=0 ; x<current.width ; x++)
@@ -366,23 +365,25 @@ void DrawMap ()
 			tile = &current.tilemap[y][x];
 			
 			// draw tile if present
-			if (tile->tileclass)
-				V_RenderTexture(&tiletextures[tile->tileclass],drawx(x),drawy(y));
+			if (tile->type) {
+				SDL_Rect dst = { drawx(x), drawy(y), TILESIZE, TILESIZE };
+				SDL_RenderCopy(renderer, tiletextures[tile->type], NULL, &dst);
+			}
 			
 			// draw object, if present
 			if (objview[y][x])
 			{
-				def = &objdefs[objview[y][x]];
-				offx = (TILESIZE - def->w) / 2; // center obj in tile
-				offy = (TILESIZE - def->h) / 2;
+				info = &objinfo[objview[y][x]];
+				offx = (TILESIZE - info->width) / 2; // center obj in tile
+				offy = (TILESIZE - info->height) / 2;
 				
-				dest = (SDL_Rect) { drawx(x)+offx,drawy(y)+offy,def->w,def->h };
-				if (objview[y][x] == playerclass) {
-					src = (SDL_Rect) { 8, 0, def->w, def->h };
+				dest = (SDL_Rect) { drawx(x)+offx,drawy(y)+offy,info->width,info->height };
+				if (objview[y][x] == OT_PLAYER) {
+					src = (SDL_Rect) { 8, 0, info->width, info->height };
 				} else {
-					src = (SDL_Rect) { 0, 0, def->w, def->h };
+					src = (SDL_Rect) { 0, 0, info->width, info->height };
 				}
-				SDL_RenderCopy(renderer, objtextures[objview[y][x]].sdltx, &src, &dest);
+				SDL_RenderCopy(renderer, objtextures[objview[y][x]], &src, &dest);
 			}
 		}
 	}
@@ -436,14 +437,14 @@ void DrawStatus()
 	textcolor(YELLOW);
 	printxy(tilecol, 0, "Tile");
 	dst = (SDL_Rect){ tilecol*8, 8, TILESIZE, TILESIZE };
-	SDL_RenderCopy(renderer, tiletextures[csr.tile].sdltx, NULL, &dst);
+	SDL_RenderCopy(renderer, tiletextures[csr.tile], NULL, &dst);
 	
 	const int objcol = 20;
 	textcolor(YELLOW);
 	printxy(objcol, 0, "Object");
-	src = (SDL_Rect){ 0, 0, objdefs[csr.obj].w, objdefs[csr.obj].h };
-	dst = (SDL_Rect){ objcol*8, 8, objdefs[csr.obj].w, objdefs[csr.obj].h };
-	SDL_RenderCopy(renderer, objtextures[csr.obj].sdltx, &src, &dst);
+	src = (SDL_Rect){ 0, 0, objinfo[csr.obj].width, objinfo[csr.obj].height };
+	dst = (SDL_Rect){ objcol*8, 8, objinfo[csr.obj].width, objinfo[csr.obj].height };
+	SDL_RenderCopy(renderer, objtextures[csr.obj], &src, &dst);
 }
 
 
@@ -454,7 +455,7 @@ void EditorLoop ()
 {
 	SDL_Event ev;
 	
-	csr.obj = playerclass;
+	csr.obj = OT_PLAYER;
 	csr.tile = 1; // whatever the first thing is
 	dragging = fill = false;
 	csr.x = csr.y = 0;
@@ -483,6 +484,7 @@ void EditorLoop ()
 					case SDLK_r:		// test
 						puts("Testing level...");
 						SaveLevel(filepath);
+						LoadLevel(&current, filepath);
 						gamestate = play;
 						break;
 						
@@ -559,6 +561,6 @@ void EditorLoop ()
 		DrawStatus();
 		
 		V_Draw();
-		V_LimitFR(60);
+		V_LimitFR();
 	} while (gamestate == editor);
 }

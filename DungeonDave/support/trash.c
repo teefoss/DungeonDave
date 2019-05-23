@@ -18,9 +18,9 @@
 boolean AlignedVert (object_t *obj1, object_t *obj2, boolean oldpos)
 {
 	int l1 = oldpos ? obj1->oldx 				: obj1->left;
-	int r1 = oldpos ? obj1->oldx + obj1->def->w : obj1->right;
+	int r1 = oldpos ? obj1->oldx + obj1->info->w : obj1->right;
 	int l2 = oldpos ? obj2->oldx				: obj2->left;
-	int r2 = oldpos ? obj2->oldx + obj2->def->w : obj2->right;
+	int r2 = oldpos ? obj2->oldx + obj2->info->w : obj2->right;
 	
 	return (r1 > l2 && l1 < r2);
 }
@@ -28,9 +28,9 @@ boolean AlignedVert (object_t *obj1, object_t *obj2, boolean oldpos)
 boolean AlignedHoriz (object_t *obj1, object_t *obj2, boolean oldpos)
 {
 	int t1 = oldpos ? obj1->oldy 				: obj1->top;
-	int b1 = oldpos ? obj1->oldy + obj1->def->h : obj2->bottom;
+	int b1 = oldpos ? obj1->oldy + obj1->info->h : obj2->bottom;
 	int t2 = oldpos ? obj2->oldy 				: obj1->top;
-	int b2 = oldpos ? obj2->oldy + obj2->def->h : obj2->bottom;
+	int b2 = oldpos ? obj2->oldy + obj2->info->h : obj2->bottom;
 	
 	return (t1 < b2 && b1 > t2);
 }
@@ -45,12 +45,12 @@ if (pl->tilex == hit->tilex) {
 	if (pl->tiley > hit->tiley) // player is below
 		SetObjectY(pl, hit->bottom+1);
 		else
-			SetObjectY(pl, hit->top-pl->def->h-1); // player is above
+			SetObjectY(pl, hit->top-pl->info->h-1); // player is above
 			}
 // vert align
 if (pl->tiley == hit->tiley) {
 	if (pl->tilex < hit->tilex) // player is to the left
-		SetObjectX(pl, hit->left-pl->def->w-1);
+		SetObjectX(pl, hit->left-pl->info->w-1);
 		else
 			SetObjectX(pl, hit->right+1); // player is to the right
 			}
@@ -61,11 +61,11 @@ if (pl->tiley == hit->tiley) {
 if (abs(pl->top - hit->bottom) <= DAVE_ACCEL)
 SetObjectY(pl, hit->bottom+1);
 if (abs(pl->bottom - hit->top) <= DAVE_ACCEL)
-SetObjectY(pl, hit->top - pl->def->h);
+SetObjectY(pl, hit->top - pl->info->h);
 if (abs(pl->left - hit->right) <= DAVE_ACCEL)
 SetObjectX(pl, hit->right+1);
 if (abs(pl->right - hit->left) <= DAVE_ACCEL)
-SetObjectY(pl, hit->left - pl->def->w);
+SetObjectY(pl, hit->left - pl->info->w);
 #endif
 
 // check the old pos to find alignment, clip to side
@@ -73,13 +73,13 @@ SetObjectY(pl, hit->left - pl->def->w);
 
 if (AlignedVert(pl, hit, true)) {
 	if (pl->top < hit->top) // player is above
-		SetObjectY(pl, hit->top - pl->def->h);
+		SetObjectY(pl, hit->top - pl->info->h);
 		else if (pl->bottom > hit->bottom) // player is below
 			SetObjectY(pl, hit->bottom + 1);
 			}
 if (AlignedHoriz(pl, hit, true)) {
 	if (pl->left < hit->left) // player is to the left
-		SetObjectX(pl, hit->left - pl->def->w);
+		SetObjectX(pl, hit->left - pl->info->w);
 		if (pl->right > hit->right) // player is to the right
 			SetObjectX(pl, hit->right + 1);
 			}

@@ -8,23 +8,23 @@
 
 #include "light.h"
 #include "dave.h"
+#include "info.h"
 
 //
 // LightLevel
-// Set current level's light properties
+// Set global 'tilemap' (current level's) default light level
 //
 void InitLighting ()
 {
 	int x,y;
 	
-
 	// reset set all tiles to default
 	// TODO def this or adjust per level!
 	for (y=0 ; y<current.height ; y++) {
 		for (x=0 ; x<current.width ; x++)
 		{
-			current.tilemap[y][x].lightsrc = false;
-			current.tilemap[y][x].light = 128;
+			tilemap[y][x].flags &= ~TF_LIGHTSRC;
+			tilemap[y][x].light = 128;
 		}
 	}
 }
@@ -42,15 +42,13 @@ void FloodLightAt (int x, int y, int radius)
 
 	for (int y1 = y-radius ; y1 <= y+radius ; y1++)
 	{
-		if (y1 < 0 || y1 > current.height)
-			continue;
+		if (y1 < 0 || y1 > current.height) continue;
 		
 		for (int x1 = x-radius ; x1 <= x+radius ; x1++)
 		{
-			if (x1 < 0 || x1 > current.width)
-				continue;
+			if (x1 < 0 || x1 > current.width) continue;
 			
-			tile_t *set = &current.tilemap[y1][x1];
+			tile_t *set = &tilemap[y1][x1];
 			int xdist = abs(x1 - x);
 			int ydist = abs(y1 - y);
 			set->light -= DEFAULT_BRIGHTNESS - ((xdist+ydist) * ld);
